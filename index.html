@@ -78,6 +78,354 @@
 
 <script>
 const equations = [
+
+    {
+        name: "Kinetic Energy",
+        vars: { Ek: "kinetic energy", m: "mass", v: "speed" },
+        units: { Ek: "J", m: "kg", v: "m/s" },
+        formula: (v) => 0.5 * v.m * Math.pow(v.v, 2),
+        solveFor: {
+            Ek: { calc: (v) => 0.5 * v.m * Math.pow(v.v, 2), sym: "E<sub>k</sub> = 0.5 &times; m &times; v&sup2;" },
+            m: { calc: (v) => (2 * v.Ek) / Math.pow(v.v, 2), sym: "m = (2 &times; E<sub>k</sub>) / v&sup2;" },
+            v: { calc: (v) => Math.sqrt((2 * v.Ek) / v.m), sym: "v = &radic;(2 &times; E<sub>k</sub> / m)" }
+        },
+        ranges: { Ek: [1, 5000], m: [0.1, 100], v: [1, 40] },
+        symbolic: "E<sub>k</sub> = 0.5 m v&sup2;" // [cite: 5, 11]
+    },
+    {
+        name: "Elastic Potential Energy",
+        vars: { Ee: "elastic potential energy", k: "spring constant", e: "extension" },
+        units: { Ee: "J", k: "N/m", e: "m" },
+        formula: (v) => 0.5 * v.k * Math.pow(v.e, 2),
+        solveFor: {
+            Ee: { calc: (v) => 0.5 * v.k * Math.pow(v.e, 2), sym: "E<sub>e</sub> = 0.5 &times; k &times; e&sup2;" },
+            k: { calc: (v) => (2 * v.Ee) / Math.pow(v.e, 2), sym: "k = (2 &times; E<sub>e</sub>) / e&sup2;" },
+            e: { calc: (v) => Math.sqrt((2 * v.Ee) / v.k), sym: "e = &radic;(2 &times; E<sub>e</sub> / k)" }
+        },
+        ranges: { Ee: [0.1, 200], k: [1, 100], e: [0.01, 2] },
+        symbolic: "E<sub>e</sub> = 0.5 k e&sup2;" // [cite: 6, 11]
+    },
+    {
+        name: "Gravitational Potential Energy",
+        vars: { Ep: "gravitational potential energy", m: "mass", g: "gravitational field strength", h: "height" },
+        units: { Ep: "J", m: "kg", g: "N/kg", h: "m" },
+        formula: (v) => v.m * v.g * v.h,
+        solveFor: {
+            Ep: { calc: (v) => v.m * v.g * v.h, sym: "E<sub>p</sub> = m &times; g &times; h" },
+            m: { calc: (v) => v.Ep / (v.g * v.h), sym: "m = E<sub>p</sub> / (g &times; h)" },
+            g: { calc: (v) => v.Ep / (v.m * v.h), sym: "g = E<sub>p</sub> / (m &times; h)" },
+            h: { calc: (v) => v.Ep / (v.m * v.g), sym: "h = E<sub>p</sub> / (m &times; g)" }
+        },
+        ranges: { Ep: [1, 5000], m: [0.1, 100], g: [9.8, 10], h: [1, 50] },
+        symbolic: "E<sub>p</sub> = m g h" // [cite: 7, 12]
+    },
+    {
+        name: "Power (Energy Transfer)",
+        vars: { P: "power", E: "energy transferred", t: "time" },
+        units: { P: "W", E: "J", t: "s" },
+        formula: (v) => v.E / v.t,
+        solveFor: {
+            P: { calc: (v) => v.E / v.t, sym: "P = E / t" },
+            E: { calc: (v) => v.P * v.t, sym: "E = P &times; t" },
+            t: { calc: (v) => v.E / v.P, sym: "t = E / P" }
+        },
+        ranges: { P: [1, 3000], E: [100, 10000], t: [1, 600] },
+        symbolic: "P = E / t" // [cite: 9, 14]
+    },
+
+    // --- ELECTRICITY ---
+    {
+        name: "Charge Flow",
+        vars: { Q: "charge flow", I: "current", t: "time" },
+        units: { Q: "C", I: "A", t: "s" },
+        formula: (v) => v.I * v.t,
+        solveFor: {
+            Q: { calc: (v) => v.I * v.t, sym: "Q = I &times; t" },
+            I: { calc: (v) => v.Q / v.t, sym: "I = Q / t" },
+            t: { calc: (v) => v.Q / v.I, sym: "t = Q / I" }
+        },
+        ranges: { Q: [1, 100], I: [0.1, 10], t: [1, 120] },
+        symbolic: "Q = I t" // [cite: 21, 22]
+    },
+    {
+        name: "Potential Difference",
+        vars: { V: "potential difference", I: "current", R: "resistance" },
+        units: { V: "V", I: "A", R: "&Omega;" },
+        formula: (v) => v.I * v.R,
+        solveFor: {
+            V: { calc: (v) => v.I * v.R, sym: "V = I &times; R" },
+            I: { calc: (v) => v.V / v.R, sym: "I = V / R" },
+            R: { calc: (v) => v.V / v.I, sym: "R = V / I" }
+        },
+        ranges: { V: [1, 230], I: [0.1, 13], R: [1, 1000] },
+        symbolic: "V = I R" // [cite: 23, 24]
+    },
+    {
+        name: "Electrical Power",
+        vars: { P: "power", V: "potential difference", I: "current" },
+        units: { P: "W", V: "V", I: "A" },
+        formula: (v) => v.V * v.I,
+        solveFor: {
+            P: { calc: (v) => v.V * v.I, sym: "P = V &times; I" },
+            V: { calc: (v) => v.P / v.I, sym: "V = P / I" },
+            I: { calc: (v) => v.P / v.V, sym: "I = P / V" }
+        },
+        ranges: { P: [1, 3000], V: [1, 230], I: [0.1, 13] },
+        symbolic: "P = V I" // [cite: 25, 26]
+    },
+
+    // --- PARTICLE MODEL OF MATTER ---
+    {
+        name: "Density",
+        vars: { rho: "density", m: "mass", V: "volume" },
+        units: { rho: "kg/m&sup3;", m: "kg", V: "m&sup3;" },
+        formula: (v) => v.m / v.V,
+        solveFor: {
+            rho: { calc: (v) => v.m / v.V, sym: "&rho; = m / V" },
+            m: { calc: (v) => v.rho * v.V, sym: "m = &rho; &times; V" },
+            V: { calc: (v) => v.m / v.rho, sym: "V = m / &rho;" }
+        },
+        ranges: { rho: [500, 10000], m: [0.1, 50], V: [0.001, 1] },
+        symbolic: "&rho; = m / V" // [cite: 32, 34]
+    },
+
+    // --- FORCES ---
+    {
+        name: "Weight",
+        vars: { W: "weight", m: "mass", g: "gravitational field strength" },
+        units: { W: "N", m: "kg", g: "N/kg" },
+        formula: (v) => v.m * v.g,
+        solveFor: {
+            W: { calc: (v) => v.m * v.g, sym: "W = m &times; g" },
+            m: { calc: (v) => v.W / v.g, sym: "m = W / g" },
+            g: { calc: (v) => v.W / v.m, sym: "g = W / m" }
+        },
+        ranges: { W: [1, 1000], m: [0.1, 100], g: [1.6, 25] },
+        symbolic: "W = m g" // 
+    },
+    {
+        name: "Work Done",
+        vars: { W: "work done", F: "force", s: "distance" },
+        units: { W: "J", F: "N", s: "m" },
+        formula: (v) => v.F * v.s,
+        solveFor: {
+            W: { calc: (v) => v.F * v.s, sym: "W = F &times; s" },
+            F: { calc: (v) => v.W / v.s, sym: "F = W / s" },
+            s: { calc: (v) => v.W / v.F, sym: "s = W / F" }
+        },
+        ranges: { W: [1, 5000], F: [1, 500], s: [1, 100] },
+        symbolic: "W = F s" // 
+    },
+    {
+        name: "Moment of a Force",
+        vars: { M: "moment of a force", F: "force", d: "distance" },
+        units: { M: "Nm", F: "N", d: "m" },
+        formula: (v) => v.F * v.d,
+        solveFor: {
+            M: { calc: (v) => v.F * v.d, sym: "M = F &times; d" },
+            F: { calc: (v) => v.M / v.d, sym: "F = M / d" },
+            d: { calc: (v) => v.M / v.F, sym: "d = M / F" }
+        },
+        ranges: { M: [1, 500], F: [1, 100], d: [0.1, 10] },
+        symbolic: "M = F d" // 
+    },
+    {
+        name: "Resultant Force",
+        vars: { F: "resultant force", m: "mass", a: "acceleration" },
+        units: { F: "N", m: "kg", a: "m/s&sup2;" },
+        formula: (v) => v.m * v.a,
+        solveFor: {
+            F: { calc: (v) => v.m * v.a, sym: "F = m &times; a" },
+            m: { calc: (v) => v.F / v.a, sym: "m = F / a" },
+            a: { calc: (v) => v.F / v.m, sym: "a = F / m" }
+        },
+        ranges: { F: [1, 1000], m: [0.1, 100], a: [0.1, 20] },
+        symbolic: "F = m a" // 
+    },
+    {
+        name: "Momentum (HT)",
+        vars: { p: "momentum", m: "mass", v: "velocity" },
+        units: { p: "kg m/s", m: "kg", v: "m/s" },
+        formula: (v) => v.m * v.v,
+        solveFor: {
+            p: { calc: (v) => v.m * v.v, sym: "p = m &times; v" },
+            m: { calc: (v) => v.p / v.v, sym: "m = p / v" },
+            v: { calc: (v) => v.p / v.m, sym: "v = p / m" }
+        },
+        ranges: { p: [1, 1000], m: [0.1, 100], v: [1, 50] },
+        symbolic: "p = m v" // 
+    },
+
+    // --- WAVES ---
+    {
+        name: "Wave Speed",
+        vars: { v: "wave speed", f: "frequency", L: "wavelength" },
+        units: { v: "m/s", f: "Hz", L: "m" },
+        formula: (v) => v.f * v.L,
+        solveFor: {
+            v: { calc: (v) => v.f * v.L, sym: "v = f &times; &lambda;" },
+            f: { calc: (v) => v.v / v.L, sym: "f = v / &lambda;" },
+            L: { calc: (v) => v.v / v.f, sym: "&lambda; = v / f" }
+        },
+        ranges: { v: [330, 300000000], f: [1, 1000000], L: [0.001, 100] },
+        symbolic: "v = f &lambda;" // 
+    },
+    {
+        name: "Magnification",
+        vars: { M: "magnification", i: "image height", o: "object height" },
+        units: { M: "none", i: "cm", o: "cm" },
+        formula: (v) => v.i / v.o,
+        solveFor: {
+            M: { calc: (v) => v.i / v.o, sym: "Magnification = image height / object height" },
+            i: { calc: (v) => v.M * v.o, sym: "image height = Magnification &times; object height" },
+            o: { calc: (v) => v.i / v.M, sym: "object height = image height / Magnification" }
+        },
+        ranges: { M: [0.1, 10], i: [1, 50], o: [1, 50] },
+        symbolic: "Magnification = image height / object height" // 
+    }
+    
+    // --- THERMAL ENERGY ---
+    {
+        name: "Change in Thermal Energy",
+        vars: { dE: "change in thermal energy", m: "mass", c: "specific heat capacity", dTheta: "temperature change" },
+        units: { dE: "J", m: "kg", c: "J/kg°C", dTheta: "°C" },
+        formula: (v) => v.m * v.c * v.dTheta,
+        solveFor: {
+            dE: { calc: (v) => v.m * v.c * v.dTheta, sym: "ΔE = m &times; c &times; Δθ" },
+            m: { calc: (v) => v.dE / (v.c * v.dTheta), sym: "m = ΔE / (c &times; Δθ)" },
+            c: { calc: (v) => v.dE / (v.m * v.dTheta), sym: "c = ΔE / (m &times; Δθ)" },
+            dTheta: { calc: (v) => v.dE / (v.m * v.c), sym: "Δθ = ΔE / (m &times; c)" }
+        },
+        ranges: { dE: [100, 50000], m: [0.1, 5], c: [400, 4200], dTheta: [1, 80] },
+        symbolic: "ΔE = m c Δθ" // 
+    },
+    {
+        name: "Specific Latent Heat",
+        vars: { E: "thermal energy for change of state", m: "mass", L: "specific latent heat" },
+        units: { E: "J", m: "kg", L: "J/kg" },
+        formula: (v) => v.m * v.L,
+        solveFor: {
+            E: { calc: (v) => v.m * v.L, sym: "E = m &times; L" },
+            m: { calc: (v) => v.E / v.L, sym: "m = E / L" },
+            L: { calc: (v) => v.E / v.m, sym: "L = E / m" }
+        },
+        ranges: { E: [1000, 100000], m: [0.01, 2], L: [334000, 2260000] },
+        symbolic: "E = m L" // 
+    },
+
+    // --- GASES & PRESSURE ---
+    {
+        name: "Gases: Pressure/Volume Constant",
+        vars: { p: "pressure", V: "volume", k: "constant" },
+        units: { p: "Pa", V: "m&sup3;", k: "none" },
+        formula: (v) => v.p * v.V,
+        solveFor: {
+            p: { calc: (v) => v.k / v.V, sym: "p = constant / V" },
+            V: { calc: (v) => v.k / v.p, sym: "V = constant / p" },
+            k: { calc: (v) => v.p * v.V, sym: "p &times; V = constant" }
+        },
+        ranges: { p: [10000, 101325], V: [0.01, 5], k: [100, 500] },
+        symbolic: "p V = constant" // 
+    },
+    {
+        name: "Pressure on a Surface",
+        vars: { p: "pressure", F: "force normal to surface", A: "area" },
+        units: { p: "Pa", F: "N", A: "m&sup2;" },
+        formula: (v) => v.F / v.A,
+        solveFor: {
+            p: { calc: (v) => v.F / v.A, sym: "p = F / A" },
+            F: { calc: (v) => v.p * v.A, sym: "F = p &times; A" },
+            A: { calc: (v) => v.F / v.p, sym: "A = F / p" }
+        },
+        ranges: { p: [1, 10000], F: [1, 500], A: [0.01, 10] },
+        symbolic: "p = F / A" // 
+    },
+    {
+        name: "Pressure in a Liquid (HT)",
+        vars: { p: "pressure", h: "height of column", rho: "density of liquid", g: "gravitational field strength" },
+        units: { p: "Pa", h: "m", rho: "kg/m&sup3;", g: "N/kg" },
+        formula: (v) => v.h * v.rho * v.g,
+        solveFor: {
+            p: { calc: (v) => v.h * v.rho * v.g, sym: "p = h &times; &rho; &times; g" },
+            h: { calc: (v) => v.p / (v.rho * v.g), sym: "h = p / (&rho; &times; g)" },
+            rho: { calc: (v) => v.p / (v.h * v.g), sym: "&rho; = p / (h &times; g)" },
+            g: { calc: (v) => v.p / (v.h * v.rho), sym: "g = p / (h &times; &rho;)" }
+        },
+        ranges: { p: [100, 10000], h: [0.5, 20], rho: [800, 1000], g: [9.8, 10] },
+        symbolic: "p = h &rho; g" // 
+    },
+
+    // --- MOTION & FORCES ---
+    {
+        name: "Acceleration",
+        vars: { a: "acceleration", dv: "change in velocity", t: "time taken" },
+        units: { a: "m/s&sup2;", dv: "m/s", t: "s" },
+        formula: (v) => v.dv / v.t,
+        solveFor: {
+            a: { calc: (v) => v.dv / v.t, sym: "a = Δv / t" },
+            dv: { calc: (v) => v.a * v.t, sym: "Δv = a &times; t" },
+            t: { calc: (v) => v.dv / v.a, sym: "t = Δv / a" }
+        },
+        ranges: { a: [0.1, 10], dv: [1, 50], t: [1, 30] },
+        symbolic: "a = Δv / t" // 
+    },
+    {
+        name: "Uniform Acceleration",
+        vars: { v2: "final velocity squared", u2: "initial velocity squared", a: "acceleration", s: "distance" },
+        units: { v2: "m&sup2;/s&sup2;", u2: "m&sup2;/s&sup2;", a: "m/s&sup2;", s: "m" },
+        formula: (v) => v.u2 + (2 * v.a * v.s),
+        solveFor: {
+            v2: { calc: (v) => v.u2 + (2 * v.a * v.s), sym: "v&sup2; = u&sup2; + 2as" },
+            u2: { calc: (v) => v.v2 - (2 * v.a * v.s), sym: "u&sup2; = v&sup2; - 2as" },
+            a: { calc: (v) => (v.v2 - v.u2) / (2 * v.s), sym: "a = (v&sup2; - u&sup2;) / 2s" },
+            s: { calc: (v) => (v.v2 - v.u2) / (2 * v.a), sym: "s = (v&sup2; - u&sup2;) / 2a" }
+        },
+        ranges: { v2: [100, 400], u2: [0, 100], a: [1, 10], s: [1, 50] },
+        symbolic: "v&sup2; - u&sup2; = 2 a s" // 
+    },
+    {
+        name: "Force on Momentum (HT)",
+        vars: { F: "force", mdv: "change in momentum", t: "time" },
+        units: { F: "N", mdv: "kg m/s", t: "s" },
+        formula: (v) => v.mdv / v.t,
+        solveFor: {
+            F: { calc: (v) => v.mdv / v.t, sym: "F = mΔv / Δt" },
+            mdv: { calc: (v) => v.F * v.t, sym: "mΔv = F &times; Δt" },
+            t: { calc: (v) => v.mdv / v.F, sym: "Δt = mΔv / F" }
+        },
+        ranges: { F: [1, 500], mdv: [10, 1000], t: [0.1, 5] },
+        symbolic: "F = mΔv / Δt" // 
+    },
+
+    // --- ELECTROMAGNETISM ---
+    {
+        name: "Force on a Conductor (HT)",
+        vars: { F: "force", B: "magnetic flux density", I: "current", L: "length" },
+        units: { F: "N", B: "T", I: "A", L: "m" },
+        formula: (v) => v.B * v.I * v.L,
+        solveFor: {
+            F: { calc: (v) => v.B * v.I * v.L, sym: "F = B &times; I &times; l" },
+            B: { calc: (v) => v.F / (v.I * v.L), sym: "B = F / (I &times; l)" },
+            I: { calc: (v) => v.F / (v.B * v.L), sym: "I = F / (B &times; l)" },
+            L: { calc: (v) => v.F / (v.B * v.I), sym: "l = F / (B &times; I)" }
+        },
+        ranges: { F: [0.01, 10], B: [0.01, 2], I: [0.1, 10], L: [0.05, 2] },
+        symbolic: "F = B I l" // 
+    },
+    {
+        name: "Transformer Efficiency (HT)",
+        vars: { Vp: "PD primary", Ip: "current primary", Vs: "PD secondary", Is: "current secondary" },
+        units: { Vp: "V", Ip: "A", Vs: "V", Is: "A" },
+        formula: (v) => v.Vs * v.Is, // Power check
+        solveFor: {
+            Vp: { calc: (v) => (v.Vs * v.Is) / v.Ip, sym: "V<sub>p</sub> = (V<sub>s</sub> &times; I<sub>s</sub>) / I<sub>p</sub>" },
+            Ip: { calc: (v) => (v.Vs * v.Is) / v.Vp, sym: "I<sub>p</sub> = (V<sub>s</sub> &times; I<sub>s</sub>) / V<sub>p</sub>" },
+            Vs: { calc: (v) => (v.Vp * v.Ip) / v.Is, sym: "V<sub>s</sub> = (V<sub>p</sub> &times; I<sub>p</sub>) / I<sub>s</sub>" },
+            Is: { calc: (v) => (v.Vp * v.Ip) / v.Vs, sym: "I<sub>s</sub> = (V<sub>p</sub> &times; I<sub>p</sub>) / V<sub>s</sub>" }
+        },
+        ranges: { Vp: [100, 240], Ip: [0.1, 5], Vs: [5, 50], Is: [1, 20] },
+        symbolic: "V<sub>p</sub> I<sub>p</sub> = V<sub>s</sub> I<sub>s</sub>" // 
+    }
     {
         name: "Weight",
         vars: { W: "weight", m: "mass", g: "gravitational field strength" },
