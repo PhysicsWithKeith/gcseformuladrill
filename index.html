@@ -150,7 +150,7 @@ const equations = [
     {
         name: "Potential Difference",
         vars: { V: "potential difference", I: "current", R: "resistance" },
-        units: { V: "V", I: "A", R: "&Omega;" },
+        units: { V: "V", I: "A", R: "Ω" },
         formula: (v) => v.I * v.R,
         solveFor: {
             V: { calc: (v) => v.I * v.R, sym: "V = I &times; R" },
@@ -178,7 +178,7 @@ const equations = [
     {
         name: "Density",
         vars: { rho: "density", m: "mass", V: "volume" },
-        units: { rho: "kg/m&sup3;", m: "kg", V: "m&sup3;" },
+        units: { rho: "kg/m³", m: "kg", V: "m³" },
         formula: (v) => v.m / v.V,
         solveFor: {
             rho: { calc: (v) => v.m / v.V, sym: "&rho; = m / V" },
@@ -263,12 +263,12 @@ const equations = [
         units: { v: "m/s", f: "Hz", L: "m" },
         formula: (v) => v.f * v.L,
         solveFor: {
-            v: { calc: (v) => v.f * v.L, sym: "v = f &times; &lambda;" },
-            f: { calc: (v) => v.v / v.L, sym: "f = v / &lambda;" },
-            L: { calc: (v) => v.v / v.f, sym: "&lambda; = v / f" }
+            v: { calc: (v) => v.f * v.L, sym: "v = f × λ" },
+            f: { calc: (v) => v.v / v.L, sym: "f = v / λ;" },
+            L: { calc: (v) => v.v / v.f, sym: "λ; = v / f" }
         },
         ranges: { v: [330, 300000000], f: [1, 1000000], L: [0.001, 100] },
-        symbolic: "v = f &lambda;" // 
+        symbolic: "v = f λ" // 
     },
     {
         name: "Magnification",
@@ -343,7 +343,7 @@ const equations = [
     {
         name: "Pressure in a Liquid (HT)",
         vars: { p: "pressure", h: "height of column", rho: "density of liquid", g: "gravitational field strength" },
-        units: { p: "Pa", h: "m", rho: "kg/m&sup3;", g: "N/kg" },
+        units: { p: "Pa", h: "m", rho: "kg/m³", g: "N/kg" },
         formula: (v) => v.h * v.rho * v.g,
         solveFor: {
             p: { calc: (v) => v.h * v.rho * v.g, sym: "p = h &times; &rho; &times; g" },
@@ -455,7 +455,7 @@ const equations = [
     {
         name: "Power (Current and Resistance)",
         vars: { P: "power", I: "current", R: "resistance" },
-        units: { P: "W", I: "A", R: "&Omega;" },
+        units: { P: "W", I: "A", R: "Ω" },
         formula: (v) => Math.pow(v.I, 2) * v.R,
         solveFor: {
             P: { calc: (v) => Math.pow(v.I, 2) * v.R, sym: "P = I&sup2; &times; R" },
@@ -545,7 +545,7 @@ const equations = [
     }
 ];
 
-const unitPool = ["N", "kg", "N/kg", "J", "m", "W", "s", "m/s", "m/s&sup2;", "none", "A", "V", "&Omega;", "C", "T", "m&sup2;"];
+const unitPool = ["N", "kg", "N/kg", "J", "m", "W", "s", "m/s", "m/s²", "none", "A", "V", "Ω", "C", "T", "m²"];
 
 class PhysicsQuiz {
     constructor() {
@@ -623,24 +623,21 @@ class PhysicsQuiz {
     setupUnits() {
         const correct = this.currentQuestion.eq.units[this.currentQuestion.targetVar];
         let options = [correct];
-        
-        // Fill with random decoys
+    
         while(options.length < 4) {
             let u = unitPool[Math.floor(Math.random() * unitPool.length)];
             if(!options.includes(u)) options.push(u);
         }
-        
-        // Shuffle the actual units
+    
         options.sort(() => Math.random() - 0.5);
-        
-        // Add the blank option at the very beginning of the array
         options.unshift(""); 
 
-        // Map to HTML - note that the first option has an empty value
-        document.getElementById('user-unit').innerHTML = options.map((u, index) => {
-            return `<option value="${u}" ${index === 0 ? 'selected' : ''}>${u}</option>`;
+        document.getElementById('user-unit').innerHTML = options.map((u) => {
+            // Use textContent or simple interpolation now that we aren't using &entities;
+            return `<option value="${u}">${u}</option>`;
         }).join('');
     }
+    
     checkAnswer() {
         const uVal = parseFloat(document.getElementById('user-answer').value);
         const uUnit = document.getElementById('user-unit').value;
