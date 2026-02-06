@@ -451,6 +451,97 @@ const equations = [
         },
         ranges: { e: [0.1, 0.95], out: [10, 400], in: [500, 1000] },
         symbolic: "Efficiency = Useful Out / Total In"
+    },
+    {
+        name: "Power (Current and Resistance)",
+        vars: { P: "power", I: "current", R: "resistance" },
+        units: { P: "W", I: "A", R: "&Omega;" },
+        formula: (v) => Math.pow(v.I, 2) * v.R,
+        solveFor: {
+            P: { calc: (v) => Math.pow(v.I, 2) * v.R, sym: "P = I&sup2; &times; R" },
+            I: { calc: (v) => Math.sqrt(v.P / v.R), sym: "I = &radic;(P / R)" },
+            R: { calc: (v) => v.P / Math.pow(v.I, 2), sym: "R = P / I&sup2;" }
+        },
+        ranges: { P: [1, 2000], I: [0.1, 13], R: [1, 500] },
+        symbolic: "P = I&sup2; R" // 
+    },
+    {
+        name: "Energy Transferred (Charge)",
+        vars: { E: "energy transferred", Q: "charge flow", V: "potential difference" },
+        units: { E: "J", Q: "C", V: "V" },
+        formula: (v) => v.Q * v.V,
+        solveFor: {
+            E: { calc: (v) => v.Q * v.V, sym: "E = Q &times; V" },
+            Q: { calc: (v) => v.E / v.V, sym: "Q = E / V" },
+            V: { calc: (v) => v.E / v.Q, sym: "V = E / Q" }
+        },
+        ranges: { E: [1, 5000], Q: [1, 100], V: [1, 230] },
+        symbolic: "E = Q V" // [cite: 31, 33]
+    },
+    {
+        name: "Force (Spring Constant)",
+        vars: { F: "force", k: "spring constant", e: "extension" },
+        units: { F: "N", k: "N/m", e: "m" },
+        formula: (v) => v.k * v.e,
+        solveFor: {
+            F: { calc: (v) => v.k * v.e, sym: "F = k &times; e" },
+            k: { calc: (v) => v.F / v.e, sym: "k = F / e" },
+            e: { calc: (v) => v.F / v.k, sym: "e = F / k" }
+        },
+        ranges: { F: [1, 100], k: [1, 500], e: [0.01, 2] },
+        symbolic: "F = k e" // 
+    },
+    {
+        name: "Distance Travelled",
+        vars: { s: "distance travelled", v: "speed", t: "time" },
+        units: { s: "m", v: "m/s", t: "s" },
+        formula: (v) => v.v * v.t,
+        solveFor: {
+            s: { calc: (v) => v.v * v.t, sym: "s = v &times; t" },
+            v: { calc: (v) => v.s / v.t, sym: "v = s / t" },
+            t: { calc: (v) => v.s / v.v, sym: "t = s / v" }
+        },
+        ranges: { s: [1, 5000], v: [1, 40], t: [1, 300] },
+        symbolic: "s = v t" // 
+    },
+    {
+        name: "Newton's Second Law",
+        vars: { F: "resultant force", m: "mass", a: "acceleration" },
+        units: { F: "N", m: "kg", a: "m/s&sup2;" },
+        formula: (v) => v.m * v.a,
+        solveFor: {
+            F: { calc: (v) => v.m * v.a, sym: "F = m &times; a" },
+            m: { calc: (v) => v.F / v.a, sym: "m = F / a" },
+            a: { calc: (v) => v.F / v.m, sym: "a = F / m" }
+        },
+        ranges: { F: [1, 1000], m: [0.1, 100], a: [0.1, 20] },
+        symbolic: "F = m a" // 
+    },
+    {
+        name: "Period of a Wave",
+        vars: { T: "period", f: "frequency" },
+        units: { T: "s", f: "Hz" },
+        formula: (v) => 1 / v.f,
+        solveFor: {
+            T: { calc: (v) => 1 / v.f, sym: "T = 1 / f" },
+            f: { calc: (v) => 1 / v.T, sym: "f = 1 / T" }
+        },
+        ranges: { T: [0.001, 10], f: [0.1, 1000] },
+        symbolic: "T = 1 / f" // 
+    },
+    {
+        name: "Transformer Equation (HT)",
+        vars: { Vp: "PD across primary", Vs: "PD across secondary", np: "turns on primary", ns: "turns on secondary" },
+        units: { Vp: "V", Vs: "V", np: "turns", ns: "turns" },
+        formula: (v) => (v.Vp / v.Vs), // Ratio check
+        solveFor: {
+            Vp: { calc: (v) => (v.Vs * v.np) / v.ns, sym: "V<sub>p</sub> = (V<sub>s</sub> &times; n<sub>p</sub>) / n<sub>s</sub>" },
+            Vs: { calc: (v) => (v.Vp * v.ns) / v.np, sym: "V<sub>s</sub> = (V<sub>p</sub> &times; n<sub>s</sub>) / n<sub>p</sub>" },
+            np: { calc: (v) => (v.Vp * v.ns) / v.Vs, sym: "n<sub>p</sub> = (V<sub>p</sub> &times; n<sub>s</sub>) / v<sub>s</sub>" },
+            ns: { calc: (v) => (v.Vs * v.np) / v.Vp, sym: "n<sub>s</sub> = (V<sub>s</sub> &times; n<sub>p</sub>) / V<sub>p</sub>" }
+        },
+        ranges: { Vp: [100, 240], Vs: [5, 50], np: [200, 1000], ns: [10, 100] },
+        symbolic: "V<sub>p</sub> / V<sub>s</sub> = n<sub>p</sub> / n<sub>s</sub>" // 
     }
 ];
 
