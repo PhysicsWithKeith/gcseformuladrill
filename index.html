@@ -134,14 +134,14 @@ const equations = [
         name: "Gravitational Potential Energy",
         vars: { Ep: "gravitational potential energy", m: "mass", g: "gravitational field strength", h: "height" },
         units: { Ep: "J", m: "kg", g: "N/kg", h: "m" },
-        formula: (v) => v.m * v.g * v.h
+        formula: (v) => v.m * v.g * v.h, // Added missing comma here
         solveFor: {
             Ep: { calc: (v) => v.m * v.g * v.h, sym: "E<sub>p</sub> = m &times; g &times; h" },
-            m: { calc: (v) => v.E<sub>p</sub> / v.g / v.h , sym: "m = E<sub>p</sub> / (g &times; h)" },
-            g: { calc: (v) => v.E<sub>p</sub> / v.m / v.h , sym: "g = E<sub>p</sub> / (m &times; h)" }
-            h: { calc: (v) => v.E<sub>p</sub> / v.m / v.g , sym: "h = E<sub>p</sub> / (m &times; g)" }
+            m: { calc: (v) => v.Ep / (v.g * v.h), sym: "m = E<sub>p</sub> / (g &times; h)" },
+            g: { calc: (v) => v.Ep / (v.m * v.h), sym: "g = E<sub>p</sub> / (m &times; h)" },
+            h: { calc: (v) => v.Ep / (v.m * v.g), sym: "h = E<sub>p</sub> / (m &times; g)" }
         },
-        ranges: { Ep: [0.08, 4200], m: [0.1, 70], g: [1.6, 12], h: [0.5, 5] },
+        ranges: { Ep: [10, 4200], m: [0.1, 70], g: [1.6, 12], h: [0.5, 5] },
         symbolic: "E<sub>p</sub> = m &times; g &times; h"
     },
     {
