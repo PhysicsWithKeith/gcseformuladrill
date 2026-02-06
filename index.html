@@ -80,7 +80,7 @@
 const equations = [
     {
         name: "Weight",
-        vars: { W: "Weight", m: "mass", g: "gravitational field strength" },
+        vars: { W: "weight", m: "mass", g: "gravitational field strength" },
         units: { W: "N", m: "kg", g: "N/kg" },
         formula: (v) => v.m * v.g,
         solveFor: {
@@ -93,7 +93,7 @@ const equations = [
     },
     {
         name: "Work Done",
-        vars: { W: "Work done", F: "force", s: "distance" },
+        vars: { W: "work done", F: "force", s: "distance" },
         units: { W: "J", F: "N", s: "m" },
         formula: (v) => v.F * v.s,
         solveFor: {
@@ -106,7 +106,7 @@ const equations = [
     },
     {
         name: "Kinetic Energy",
-        vars: { Ek: "Kinetic energy", m: "mass", v: "speed" },
+        vars: { Ek: "kinetic energy", m: "mass", v: "speed" },
         units: { Ek: "J", m: "kg", v: "m/s" },
         formula: (v) => 0.5 * v.m * Math.pow(v.v, 2),
         solveFor: {
@@ -118,8 +118,35 @@ const equations = [
         symbolic: "E<sub>k</sub> = 0.5 m v&sup2;"
     },
     {
+        name: "Elastic Potential Energy",
+        vars: { Ee: "elastic Potential Energy", k: "spring constant", e: "extension" },
+        units: { Ee: "J", k: "N/m", e: "m" },
+        formula: (v) => 0.5 * v.k * Math.pow(v.e, 2),
+        solveFor: {
+            Ee: { calc: (v) => 0.5 * v.k * Math.pow(v.e, 2), sym: "E<sub>e</sub> = 0.5 &times; k &times; e&sup2;" },
+            k: { calc: (v) => (2 * v.Ee) / Math.pow(v.e, 2), sym: "k = (2 &times; E<sub>e</sub>) / e&sup2;" },
+            e: { calc: (v) => Math.sqrt((2 * v.Ee) / v.k), sym: "e = &radic;(2 &times; E<sub>e</sub> / k)" }
+        },
+        ranges: { Ee: [0.0025, 100], k: [0.5, 50], e: [0.1, 2] },
+        symbolic: "E<sub>e</sub> = 0.5 k e&sup2;"
+    },
+    {
+        name: "Gravitational Potential Energy",
+        vars: { Ep: "gravitational potential energy", m: "mass", g: "gravitational field strength", h: "height" },
+        units: { Ep: "J", m: "kg", g: "N/kg", h: "m" },
+        formula: (v) => v.m * v.g * v.h
+        solveFor: {
+            Ep: { calc: (v) => v.m * v.g * v.h, sym: "E<sub>p</sub> = m &times; g &times; h" },
+            m: { calc: (v) => v.E<sub>p</sub> / v.g / v.h , sym: "m = E<sub>p</sub> / (g &times; h)" },
+            g: { calc: (v) => v.E<sub>p</sub> / v.m / v.h , sym: "g = E<sub>p</sub> / (m &times; h)" }
+            h: { calc: (v) => v.E<sub>p</sub> / v.m / v.g , sym: "h = E<sub>p</sub> / (m &times; g)" }
+        },
+        ranges: { Ep: [0.08, 4200], m: [0.1, 70], g: [1.6, 12], h: [0.5, 5] },
+        symbolic: "E<sub>p</sub> = m &times; g &times; h"
+    },
+    {
         name: "Power (Work)",
-        vars: { P: "Power", W: "Work done", t: "time" },
+        vars: { P: "power", W: "work done", t: "time" },
         units: { P: "W", W: "J", t: "s" },
         formula: (v) => v.W / v.t,
         solveFor: {
@@ -132,7 +159,7 @@ const equations = [
     },
     {
         name: "Efficiency",
-        vars: { e: "Efficiency", out: "Useful output energy", in: "Total input energy" },
+        vars: { e: "efficiency", out: "useful output energy", in: "total input energy" },
         units: { e: "none", out: "J", in: "J" },
         formula: (v) => v.out / v.in,
         solveFor: {
