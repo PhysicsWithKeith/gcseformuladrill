@@ -1,0 +1,303 @@
+<div id="physics-quiz-container" style="min-height: 750px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <div id="start-screen" class="quiz-box">
+        <h1 style="color: #fff; margin-bottom: 10px;">GCSE Equation Master</h1>
+        <p style="color: #eee; margin-bottom: 25px;">15 Questions • 4 Attempts • Real-time Feedback</p>
+        <button onclick="quiz.start()" class="primary-btn">Start Game</button>
+    </div>
+
+    <div id="quiz-ui" class="quiz-box" style="display:none; width: 100%; max-width: 600px;">
+        <div class="header-stats">
+            <div class="stat-pill">Time: <span id="timer">00:00</span></div>
+            <div class="stat-pill">Progress: <span id="progress">0/15</span></div>
+            <div class="stat-pill">Score: <span id="score">0</span></div>
+        </div>
+        
+        <div class="question-container">
+            <p id="question-text"></p>
+        </div>
+
+        <div class="interaction-container">
+            <div class="input-row">
+                <input type="number" id="user-answer" placeholder="Enter value..." step="any">
+                <select id="user-unit"></select>
+                <button onclick="quiz.checkAnswer()" id="submit-btn" class="check-btn">Check</button>
+            </div>
+            <div id="feedback-row">
+                <p id="feedback"></p>
+            </div>
+        </div>
+
+        <div class="hints-container">
+            <div id="hint-1" class="hint-box"></div>
+            <div id="hint-2" class="hint-box"></div>
+            <div id="hint-3" class="hint-box reveal-box"></div>
+            <div id="attempts-left">Attempts remaining: 4</div>
+        </div>
+
+        <div class="action-footer">
+            <button onclick="quiz.skipQuestion()" class="skip-btn">Skip Question</button>
+        </div>
+    </div>
+
+    <div id="result-screen" class="quiz-box" style="display:none;">
+        <h2 style="color: #fff;">Results</h2>
+        <div id="final-stats" style="font-size: 1.8rem; margin: 20px 0; font-weight: bold;"></div>
+        <div id="review-list"></div>
+        <button onclick="location.reload()" class="primary-btn" style="margin-top: 25px;">Restart Challenge</button>
+    </div>
+</div>
+
+<style>
+    .quiz-box {
+        background: linear-gradient(145deg, #2e3192 0%, #1bffff 100%);
+        border-radius: 28px;
+        padding: 40px;
+        color: white;
+        text-align: center;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    .header-stats { display: flex; justify-content: space-around; margin-bottom: 20px; }
+    .stat-pill { background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 15px; font-family: monospace; font-size: 1rem; }
+    .question-container { height: 130px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; line-height: 1.5; margin-bottom: 10px; }
+    .interaction-container { height: 120px; }
+    .input-row { display: flex; gap: 10px; justify-content: center; }
+    .input-row input, .input-row select { padding: 12px; border-radius: 12px; border: none; font-size: 1rem; outline: none; }
+    .input-row input { width: 140px; }
+    .check-btn { background: #ffcf00; color: #333; border: none; padding: 12px 25px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .check-btn:hover { background: #fff; transform: scale(1.05); }
+    #feedback-row { height: 30px; margin-top: 10px; font-weight: bold; }
+    .hints-container { height: 210px; background: rgba(255,255,255,0.1); border-radius: 20px; padding: 15px; text-align: left; }
+    .hint-box { min-height: 35px; margin-bottom: 8px; font-size: 0.95rem; color: #fff; }
+    .reveal-box { color: #ffeb3b; font-weight: bold; }
+    #attempts-left { text-align: center; font-size: 0.8rem; opacity: 0.8; margin-top: 10px; }
+    .primary-btn { background: #ffffff; color: #2e3192; border: none; padding: 15px 40px; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
+    .skip-btn { background: transparent; border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 20px; border-radius: 10px; cursor: pointer; font-size: 0.8rem; }
+    #review-list { text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 15px; max-height: 150px; overflow-y: auto; }
+</style>
+
+<script>
+const equations = [
+    {
+        name: "Weight",
+        vars: { W: "Weight", m: "mass", g: "gravitational field strength" },
+        units: { W: "N", m: "kg", g: "N/kg" },
+        formula: (v) => v.m * v.g,
+        solveFor: {
+            W: { calc: (v) => v.m * v.g, sym: "W = m &times; g" },
+            m: { calc: (v) => v.W / v.g, sym: "m = W / g" },
+            g: { calc: (v) => v.W / v.m, sym: "g = W / m" }
+        },
+        ranges: { W: [10, 1000], m: [1, 100], g: [1.6, 15.5] },
+        symbolic: "W = m g"
+    },
+    {
+        name: "Work Done",
+        vars: { W: "Work done", F: "force", s: "distance" },
+        units: { W: "J", F: "N", s: "m" },
+        formula: (v) => v.F * v.s,
+        solveFor: {
+            W: { calc: (v) => v.F * v.s, sym: "W = F &times; s" },
+            F: { calc: (v) => v.W / v.s, sym: "F = W / s" },
+            s: { calc: (v) => v.W / v.F, sym: "s = W / F" }
+        },
+        ranges: { W: [10, 5000], F: [1, 500], s: [1, 100] },
+        symbolic: "W = F s"
+    },
+    {
+        name: "Kinetic Energy",
+        vars: { Ek: "Kinetic energy", m: "mass", v: "speed" },
+        units: { Ek: "J", m: "kg", v: "m/s" },
+        formula: (v) => 0.5 * v.m * Math.pow(v.v, 2),
+        solveFor: {
+            Ek: { calc: (v) => 0.5 * v.m * Math.pow(v.v, 2), sym: "E<sub>k</sub> = 0.5 &times; m &times; v&sup2;" },
+            m: { calc: (v) => (2 * v.Ek) / Math.pow(v.v, 2), sym: "m = (2 &times; E<sub>k</sub>) / v&sup2;" },
+            v: { calc: (v) => Math.sqrt((2 * v.Ek) / v.m), sym: "v = &radic;(2 &times; E<sub>k</sub> / m)" }
+        },
+        ranges: { Ek: [10, 10000], m: [0.5, 50], v: [1, 30] },
+        symbolic: "E<sub>k</sub> = 0.5 m v&sup2;"
+    },
+    {
+        name: "Power (Work)",
+        vars: { P: "Power", W: "Work done", t: "time" },
+        units: { P: "W", W: "J", t: "s" },
+        formula: (v) => v.W / v.t,
+        solveFor: {
+            P: { calc: (v) => v.W / v.t, sym: "P = W / t" },
+            W: { calc: (v) => v.P * v.t, sym: "W = P &times; t" },
+            t: { calc: (v) => v.W / v.P, sym: "t = W / P" }
+        },
+        ranges: { P: [10, 2000], W: [100, 10000], t: [1, 60] },
+        symbolic: "P = W / t"
+    },
+    {
+        name: "Efficiency",
+        vars: { e: "Efficiency", out: "Useful output energy", in: "Total input energy" },
+        units: { e: "none", out: "J", in: "J" },
+        formula: (v) => v.out / v.in,
+        solveFor: {
+            e: { calc: (v) => v.out / v.in, sym: "Efficiency = Useful Out / Total In" },
+            out: { calc: (v) => v.e * v.in, sym: "Useful Out = Efficiency &times; Total In" },
+            in: { calc: (v) => v.out / v.e, sym: "Total In = Useful Out / Efficiency" }
+        },
+        ranges: { e: [0.1, 0.95], out: [10, 400], in: [500, 1000] },
+        symbolic: "Efficiency = Useful Out / Total In"
+    }
+];
+
+const unitPool = ["N", "kg", "N/kg", "J", "m", "W", "s", "m/s", "m/s&sup2;", "none", "A", "V", "&Omega;", "C", "T", "m&sup2;"];
+
+class PhysicsQuiz {
+    constructor() {
+        this.currentQuestion = null;
+        this.attempts = 4;
+        this.score = 0;
+        this.attempted = 0;
+        this.startTime = null;
+        this.timerInterval = null;
+        this.failedList = [];
+    }
+
+    formatNumber(n) {
+        if (n >= 1000000 || n <= 0.0001) {
+            let str = n.toExponential(2);
+            return str.replace(/e\+?/, " x10<sup>") + "</sup>";
+        }
+        return parseFloat(n.toPrecision(3)).toString();
+    }
+
+    start() {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('quiz-ui').style.display = 'block';
+        this.startTime = Date.now();
+        this.timerInterval = setInterval(() => this.updateTimer(), 1000);
+        this.nextQuestion();
+    }
+
+    updateTimer() {
+        const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+        const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        const s = String(elapsed % 60).padStart(2, '0');
+        document.getElementById('timer').innerText = `${m}:${s}`;
+    }
+
+    nextQuestion() {
+        if (this.attempted >= 15) return this.finish();
+        
+        this.attempts = 4;
+        const eq = equations[Math.floor(Math.random() * equations.length)];
+        const targetVar = Object.keys(eq.vars)[Math.floor(Math.random() * Object.keys(eq.vars).length)];
+        
+        let vals = {};
+        Object.keys(eq.vars).forEach(v => {
+            const range = eq.ranges[v];
+            vals[v] = Math.random() * (range[1] - range[0]) + range[0];
+        });
+
+        // Specific Logic Checks
+        if(eq.name === "Efficiency") {
+            vals.in = Math.max(vals.in, vals.out * 1.5);
+            vals.e = vals.out / vals.in;
+        }
+
+        vals[targetVar] = eq.solveFor[targetVar].calc(vals);
+        this.currentQuestion = { eq, targetVar, vals, answer: vals[targetVar] };
+        this.render();
+    }
+
+    render() {
+        const cq = this.currentQuestion;
+        let qText = `A student needs to find the <b>${cq.eq.vars[cq.targetVar]}</b>. <br>Given: `;
+        const others = Object.keys(cq.eq.vars).filter(v => v !== cq.targetVar);
+        const detail = others.map(v => `${cq.eq.vars[v]} = ${this.formatNumber(cq.vals[v])}&nbsp;${cq.eq.units[v]}`);
+        
+        document.getElementById('question-text').innerHTML = qText + detail.join(' and ') + ".";
+        document.getElementById('progress').innerText = `${this.attempted}/15`;
+        document.getElementById('attempts-left').innerText = `Attempts remaining: ${this.attempts}`;
+        document.getElementById('feedback').innerText = "";
+        ['hint-1', 'hint-2', 'hint-3'].forEach(h => document.getElementById(h).innerHTML = "");
+        document.getElementById('user-answer').value = "";
+        this.setupUnits();
+    }
+
+    setupUnits() {
+        const correct = this.currentQuestion.eq.units[this.currentQuestion.targetVar];
+        let options = [correct];
+        while(options.length < 4) {
+            let u = unitPool[Math.floor(Math.random() * unitPool.length)];
+            if(!options.includes(u)) options.push(u);
+        }
+        options.sort(() => Math.random() - 0.5);
+        document.getElementById('user-unit').innerHTML = options.map(u => `<option value="${u}">${u}</option>`).join('');
+    }
+
+    checkAnswer() {
+        const uVal = parseFloat(document.getElementById('user-answer').value);
+        const uUnit = document.getElementById('user-unit').value;
+        const cVal = this.currentQuestion.answer;
+        const cUnit = this.currentQuestion.eq.units[this.currentQuestion.targetVar];
+
+        if (isNaN(uVal)) return;
+
+        const isNumRight = Math.abs((uVal - cVal) / cVal) < 0.025;
+        const isUnitRight = uUnit === cUnit;
+        
+        if (isNumRight && isUnitRight) {
+            this.score++;
+            this.attempted++;
+            document.getElementById('score').innerText = this.score;
+            document.getElementById('feedback').style.color = "#00ff88";
+            document.getElementById('feedback').innerText = "Correct!";
+            setTimeout(() => this.nextQuestion(), 1200);
+        } else {
+            this.attempts--;
+            this.showFeedback(uVal, cVal, isNumRight, isUnitRight);
+            if (this.attempts === 0) {
+                this.failedList.push(this.currentQuestion.eq.name);
+                this.attempted++;
+                document.getElementById('hint-3').innerHTML = `Final Answer: ${this.formatNumber(cVal)} ${cUnit}`;
+                setTimeout(() => this.nextQuestion(), 3000);
+            }
+        }
+    }
+
+    showFeedback(uVal, cVal, isNumRight, isUnitRight) {
+        let msg = "Incorrect.";
+        const logRatio = Math.log10(Math.abs(uVal / cVal));
+        const isPowerOfTen = !isNumRight && Math.abs(logRatio - Math.round(logRatio)) < 0.01;
+
+        if (isNumRight && !isUnitRight) msg = "Value correct, but wrong unit!";
+        else if (isPowerOfTen) msg = "Check your powers of ten!";
+
+        document.getElementById('feedback').style.color = "#ffcf00";
+        document.getElementById('feedback').innerText = msg;
+        document.getElementById('attempts-left').innerText = `Attempts remaining: ${this.attempts}`;
+
+        if (this.attempts <= 2) {
+            document.getElementById('hint-1').innerHTML = `&bull; Equation: ${this.currentQuestion.eq.symbolic}`;
+        }
+        if (this.attempts <= 1) {
+            document.getElementById('hint-2').innerHTML = `&bull; Rearrangement: ${this.currentQuestion.eq.solveFor[this.currentQuestion.targetVar].sym}`;
+        }
+    }
+
+    skipQuestion() {
+        this.failedList.push(this.currentQuestion.eq.name + " (Skipped)");
+        this.attempted++;
+        this.nextQuestion();
+    }
+
+    finish() {
+        clearInterval(this.timerInterval);
+        document.getElementById('quiz-ui').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        document.getElementById('final-stats').innerHTML = `${this.score} / 15<br><span style="font-size:1rem">Time: ${document.getElementById('timer').innerText}</span>`;
+        
+        const list = [...new Set(this.failedList)];
+        document.getElementById('review-list').innerHTML = list.length ? 
+            "<strong>Equations to review:</strong><ul>" + list.map(l => `<li>${l}</li>`).join('') + "</ul>" : "Perfect Score!";
+    }
+}
+
+const quiz = new PhysicsQuiz();
+</script>
