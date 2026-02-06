@@ -623,14 +623,24 @@ class PhysicsQuiz {
     setupUnits() {
         const correct = this.currentQuestion.eq.units[this.currentQuestion.targetVar];
         let options = [correct];
+        
+        // Fill with random decoys
         while(options.length < 4) {
             let u = unitPool[Math.floor(Math.random() * unitPool.length)];
             if(!options.includes(u)) options.push(u);
         }
+        
+        // Shuffle the actual units
         options.sort(() => Math.random() - 0.5);
-        document.getElementById('user-unit').innerHTML = options.map(u => `<option value="${u}">${u}</option>`).join('');
-    }
+        
+        // Add the blank option at the very beginning of the array
+        options.unshift(""); 
 
+        // Map to HTML - note that the first option has an empty value
+        document.getElementById('user-unit').innerHTML = options.map((u, index) => {
+            return `<option value="${u}" ${index === 0 ? 'selected' : ''}>${u}</option>`;
+        }).join('');
+    }
     checkAnswer() {
         const uVal = parseFloat(document.getElementById('user-answer').value);
         const uUnit = document.getElementById('user-unit').value;
